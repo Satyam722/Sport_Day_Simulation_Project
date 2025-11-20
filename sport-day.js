@@ -1,163 +1,218 @@
-let isRunning = false;
+// Sports Day Simulation - Complete Implementation
+// Global scores object
+let scores = {
+    red: 0,
+    blue: 0,
+    green: 0,
+    yellow: 0
+};
 
-function updateStatus(message, type = 'success') {
-    const statusDiv = document.getElementById('status');
-    statusDiv.textContent = message;
-    statusDiv.className = `status ${type}`;
-}
+let isEventRunning = false;
 
-function clearConsole() {
-    document.getElementById('consoleOutput').innerHTML = 
-        '<div>▶️ Console cleared. Ready for new simulation!</div>';
-}
-
-function addToConsole(message) {
-    const consoleOutput = document.getElementById('consoleOutput');
+// Utility function to log messages to console and display
+function log(message) {
+    const output = document.getElementById('output');
     const messageDiv = document.createElement('div');
+    messageDiv.className = 'event-message';
     messageDiv.textContent = message;
-    consoleOutput.appendChild(messageDiv);
-    consoleOutput.scrollTop = consoleOutput.scrollHeight;
-    
-    // Also log to browser console
+    output.appendChild(messageDiv);
+    output.scrollTop = output.scrollHeight;
     console.log(message);
 }
 
+// Main function to start the sports day
 function startSportsDay() {
-    if (isRunning) {
-        updateStatus('⚠️ Sports Day is already running!', 'error');
+    if (isEventRunning) {
+        log("⚠️ Sports Day is already running!");
         return;
     }
     
+    isEventRunning = true;
     const startBtn = document.getElementById('startBtn');
     startBtn.disabled = true;
-    startBtn.textContent = 'Running...';
-    isRunning = true;
+    startBtn.textContent = 'Event Running...';
     
-    updateStatus('🎊 Sports Day Started! Check the console below.');
+    // Reset scores and clear console
+    scores = { red: 0, blue: 0, green: 0, yellow: 0 };
+    document.getElementById('output').innerHTML = '<div class="event-message">🎊 Starting Sports Day Simulation...</div>';
     
-    // Clear previous output but keep first message
-    const consoleOutput = document.getElementById('consoleOutput');
-    consoleOutput.innerHTML = '<div>▶️ Sports Day Simulation Started...</div>';
+    log("========================================");
+    log("🏆 SPORTS DAY SIMULATION INITIATED");
+    log("========================================");
     
-    // Your Sports Day Simulation Code
-    let scores = { red: 0, blue: 0, green: 0, yellow: 0 };
+    // Start the callback chain
+    OpeningCeremony(scores, Race100M);
+}
 
-    function OpeningCeremony(nextEvent) {
-        addToConsole("🎊 Opening Ceremony Started!");
+// 1. OPENING CEREMONY FUNCTION
+function OpeningCeremony(currentScores, nextCallback) {
+    log("\n🎊 OPENING CEREMONY");
+    log("Let the games begin!");
+    
+    let count = 0;
+    const timer = setInterval(() => {
+        count++;
+        log(`Sports Day starting in ${4 - count}...`);
         
-        let count = 0;
-        const timer = setInterval(() => {
-            count++;
-            addToConsole(`Sports Day Countdown: ${4 - count}...`);
+        if (count === 3) {
+            clearInterval(timer);
+            log("✅ Opening Ceremony Completed!");
+            log("Initial Scores: " + JSON.stringify(currentScores));
+            log("----------------------------------------");
             
-            if (count === 3) {
-                clearInterval(timer);
-                addToConsole("🎯 Initial Scores: " + JSON.stringify(scores));
-                addToConsole("----------------------------------------");
-                nextEvent(scores, Race100M);
-            }
-        }, 1000);
-    }
+            // Pass control to next event
+            nextCallback(currentScores, LongJump);
+        }
+    }, 1000);
+}
 
-    function Race100M(currentScores, nextEvent) {
-        addToConsole("🏃‍♂️ 100M Race begins in 3 seconds...");
+// 2. RACE 100M FUNCTION
+function Race100M(currentScores, nextCallback) {
+    log("\n🏃‍♂️ 100 METERS RACE");
+    log("Race starting in 3 seconds...");
+    
+    setTimeout(() => {
+        log("🔫 Starting Pistol Fired! Race begins!");
         
-        setTimeout(() => {
-            const raceTimes = {};
-            Object.keys(currentScores).forEach(color => {
-                raceTimes[color] = (Math.random() * 5 + 10).toFixed(2);
-            });
-            
-            addToConsole("⏱️ Race Times: " + JSON.stringify(raceTimes));
-            
-            const sorted = Object.entries(raceTimes)
-                .sort(([,a], [,b]) => a - b)
-                .map(([color]) => color);
-            
-            const updatedScores = {...currentScores};
-            updatedScores[sorted[0]] += 50;
-            updatedScores[sorted[1]] += 25;
-            
-            addToConsole("📊 Race Results:");
-            addToConsole(`🥇 ${sorted[0]} - ${raceTimes[sorted[0]]}s (+50 points)`);
-            addToConsole(`🥈 ${sorted[1]} - ${raceTimes[sorted[1]]}s (+25 points)`);
-            addToConsole("📈 Updated Scores: " + JSON.stringify(updatedScores));
-            addToConsole("----------------------------------------");
-            
-            nextEvent(updatedScores, LongJump);
-        }, 3000);
-    }
-
-    function LongJump(currentScores, nextEvent) {
-        addToConsole("🦘 Long Jump begins in 2 seconds...");
+        // Generate random race times (10-15 seconds)
+        const raceTimes = {};
+        const colors = Object.keys(currentScores);
         
-        setTimeout(() => {
-            const colors = Object.keys(currentScores);
-            const winner = colors[Math.floor(Math.random() * colors.length)];
-            
-            const updatedScores = {...currentScores};
-            updatedScores[winner] += 150;
-            
-            addToConsole("🌟 Long Jump Results:");
-            addToConsole(`🏆 Winner: ${winner} (+150 points)`);
-            addToConsole("📈 Updated Scores: " + JSON.stringify(updatedScores));
-            addToConsole("----------------------------------------");
-            
-            nextEvent(updatedScores, HighJump);
-        }, 2000);
-    }
-
-    function HighJump(currentScores, nextEvent) {
-        addToConsole("🦘 High Jump Event - Please check for a prompt!");
-        
-        const validColors = Object.keys(currentScores);
-        
-        // Use setTimeout to allow console to update before prompt
-        setTimeout(() => {
-            const userChoice = prompt(`🏅 Which color won the High Jump?\nEnter one of: ${validColors.join(", ")}`);
-            
-            let updatedScores = {...currentScores};
-            
-            if (userChoice && validColors.includes(userChoice.toLowerCase())) {
-                const winner = userChoice.toLowerCase();
-                updatedScores[winner] += 100;
-                
-                addToConsole("🌟 High Jump Results:");
-                addToConsole(`🏆 Winner: ${winner} (+100 points)`);
-                addToConsole("📈 Updated Scores: " + JSON.stringify(updatedScores));
-            } else {
-                addToConsole("❌ High Jump cancelled - invalid or no input provided");
-                addToConsole("📈 Scores unchanged: " + JSON.stringify(currentScores));
-            }
-            
-            addToConsole("----------------------------------------");
-            nextEvent(updatedScores, AwardCeremony);
-        }, 100);
-    }
-
-    function AwardCeremony(finalScores) {
-        addToConsole("🎖️  AWARD CEREMONY  🎖️");
-        addToConsole("Final Scores: " + JSON.stringify(finalScores));
-        
-        const rankings = Object.entries(finalScores)
-            .sort(([,a], [,b]) => b - a);
-        
-        addToConsole("\n🏆 FINAL STANDINGS 🏆");
-        const medals = ["🥇", "🥈", "🥉", "  "];
-        rankings.forEach(([color, score], index) => {
-            addToConsole(`${medals[index]} ${index + 1}. ${color.toUpperCase()} - ${score} points`);
+        colors.forEach(color => {
+            raceTimes[color] = parseFloat((Math.random() * 5 + 10).toFixed(2));
         });
         
-        addToConsole("\n🎉 Congratulations to all participants! 🎉");
+        log("Race Times: " + JSON.stringify(raceTimes));
         
-        // Re-enable button
-        const startBtn = document.getElementById('startBtn');
-        startBtn.disabled = false;
-        startBtn.textContent = 'Start Sports Day';
-        isRunning = false;
-        updateStatus('✅ Sports Day completed successfully!');
-    }
-
-    // Start the event chain
-    OpeningCeremony(Race100M);
+        // Determine winners (sort by time - lower is better)
+        const sortedResults = Object.entries(raceTimes)
+            .sort(([,timeA], [,timeB]) => timeA - timeB);
+        
+        const firstPlace = sortedResults[0][0]; // Fastest
+        const secondPlace = sortedResults[1][0]; // Second fastest
+        
+        // Update scores
+        const updatedScores = {...currentScores};
+        updatedScores[firstPlace] += 50;  // 1st place: 50 points
+        updatedScores[secondPlace] += 25; // 2nd place: 25 points
+        
+        log("Previous Scores: " + JSON.stringify(currentScores));
+        log("🏅 Race Results:");
+        log(`🥇 1st Place: ${firstPlace} - ${raceTimes[firstPlace]}s (+50 points)`);
+        log(`🥈 2nd Place: ${secondPlace} - ${raceTimes[secondPlace]}s (+25 points)`);
+        log(`🥉 3rd Place: ${sortedResults[2][0]} - ${raceTimes[sortedResults[2][0]]}s`);
+        log(`   4th Place: ${sortedResults[3][0]} - ${raceTimes[sortedResults[3][0]]}s`);
+        log("Updated Scores: " + JSON.stringify(updatedScores));
+        log("----------------------------------------");
+        
+        // Pass control to next event
+        nextCallback(updatedScores, HighJump);
+        
+    }, 3000);
 }
+
+// 3. LONG JUMP FUNCTION
+function LongJump(currentScores, nextCallback) {
+    log("\n🦘 LONG JUMP COMPETITION");
+    log("Event starting in 2 seconds...");
+    
+    setTimeout(() => {
+        log("🌟 Long Jump Competition Started!");
+        
+        // Randomly select winner
+        const colors = Object.keys(currentScores);
+        const winningColor = colors[Math.floor(Math.random() * colors.length)];
+        
+        // Update scores
+        const updatedScores = {...currentScores};
+        updatedScores[winningColor] += 150; // Long jump winner gets 150 points
+        
+        log("Previous Scores: " + JSON.stringify(currentScores));
+        log("🏅 Long Jump Results:");
+        log(`🏆 Winner: ${winningColor} (+150 points)`);
+        log("Updated Scores: " + JSON.stringify(updatedScores));
+        log("----------------------------------------");
+        
+        // Pass control to next event
+        nextCallback(updatedScores, AwardCeremony);
+        
+    }, 2000);
+}
+
+// 4. HIGH JUMP FUNCTION
+function HighJump(currentScores, nextCallback) {
+    log("\n🦘 HIGH JUMP COMPETITION");
+    log("Waiting for user input...");
+    
+    // Use setTimeout to allow console to update before prompt
+    setTimeout(() => {
+        const validColors = Object.keys(currentScores);
+        const userInput = prompt(
+            "🏅 HIGH JUMP: Which color secured the highest jump?\n\n" +
+            "Enter one of the following colors:\n" +
+            "• red\n• blue\n• green\n• yellow\n\n" +
+            "Or click Cancel to skip this event."
+        );
+        
+        let updatedScores = {...currentScores};
+        
+        if (userInput && validColors.includes(userInput.toLowerCase())) {
+            const winner = userInput.toLowerCase();
+            updatedScores[winner] += 100; // High jump winner gets 100 points
+            
+            log("Previous Scores: " + JSON.stringify(currentScores));
+            log("🏅 High Jump Results:");
+            log(`🏆 Winner: ${winner} (+100 points)`);
+            log("Updated Scores: " + JSON.stringify(updatedScores));
+        } else {
+            if (userInput === null || userInput === "") {
+                log("❌ High Jump cancelled - No input provided");
+            } else {
+                log(`❌ High Jump cancelled - Invalid color: "${userInput}"`);
+                log(`💡 Valid colors are: ${validColors.join(", ")}`);
+            }
+            log("Scores unchanged: " + JSON.stringify(currentScores));
+        }
+        
+        log("----------------------------------------");
+        
+        // Pass control to Award Ceremony
+        nextCallback(updatedScores);
+        
+    }, 100);
+}
+
+// 5. AWARD CEREMONY FUNCTION
+function AwardCeremony(finalScores) {
+    log("\n🎖️ AWARD CEREMONY");
+    log("Final Scores: " + JSON.stringify(finalScores));
+    
+    // Sort scores in descending order
+    const rankings = Object.entries(finalScores)
+        .sort(([,scoreA], [,scoreB]) => scoreB - scoreA);
+    
+    log("\n🏆 FINAL STANDINGS 🏆");
+    log("========================");
+    
+    const medals = ["🥇", "🥈", "🥉", "  "];
+    rankings.forEach(([color, score], index) => {
+        log(`${medals[index]} ${index + 1}. ${color.toUpperCase()} - ${score} points`);
+    });
+    
+    log("========================");
+    log("\n🎉 CONGRATULATIONS TO ALL PARTICIPANTS!");
+    log("🏅 Sports Day 2024 - Event Completed!");
+    log("========================================");
+    
+    // Reset button state
+    const startBtn = document.getElementById('startBtn');
+    startBtn.disabled = false;
+    startBtn.textContent = 'START SPORTS DAY';
+    isEventRunning = false;
+}
+
+// Page load initialization
+window.addEventListener('load', function() {
+    log("✅ Sports Day Simulation Loaded Successfully");
+    log("👉 Click 'START SPORTS DAY' to begin the event chain");
+});
