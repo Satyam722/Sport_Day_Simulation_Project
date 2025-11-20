@@ -55,17 +55,164 @@
             margin: 8px 0;
             padding: 5px;
         }
+        .error-message {
+            color: #ff4444;
+            background: #ffeaea;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            display: none;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>🏆 Sports Day Simulation 🏆</h1>
-        <button id="startBtn" onclick="startSportsDay()">START SPORTS DAY</button>
+        <div class="error-message" id="errorMessage"></div>
+        <button id="startBtn">START SPORTS DAY</button>
         <div class="console" id="output">
             <div class="event-message">Ready to start... Click the button above!</div>
         </div>
     </div>
 
-    <script src="sports-day.js"></script>
+    <!-- ALL JAVASCRIPT EMBEDDED DIRECTLY IN HTML -->
+    <script>
+        // Sports Day Simulation - All functions in one place
+        
+        // Global variables
+        let isSportsDayRunning = false;
+        let events = [];
+        let participants = [];
+
+        // Main function to start Sports Day
+        function startSportsDay() {
+            const output = document.getElementById('output');
+            const startBtn = document.getElementById('startBtn');
+            const errorMessage = document.getElementById('errorMessage');
+            
+            // Hide any previous error messages
+            errorMessage.style.display = 'none';
+            
+            if (isSportsDayRunning) {
+                output.innerHTML += `<div class="event-message" style="color: orange;">Sports Day is already running!</div>`;
+                return;
+            }
+            
+            isSportsDayRunning = true;
+            startBtn.disabled = true;
+            startBtn.textContent = 'SPORTS DAY IN PROGRESS...';
+            
+            output.innerHTML = '<div class="event-message">Starting Sports Day Simulation...</div>';
+            
+            // Initialize and run sports day
+            initializeSportsDay();
+            runSportsDayEvents();
+        }
+
+        function initializeSportsDay() {
+            const output = document.getElementById('output');
+            
+            // Create participants
+            participants = [
+                { id: 1, name: 'Team Red', color: '#ff4444' },
+                { id: 2, name: 'Team Blue', color: '#4444ff' },
+                { id: 3, name: 'Team Green', color: '#44ff44' },
+                { id: 4, name: 'Team Yellow', color: '#ffff44' }
+            ];
+            
+            // Create events
+            events = [
+                { name: '100m Sprint', duration: 2000 },
+                { name: 'Long Jump', duration: 3000 },
+                { name: 'Relay Race', duration: 4000 },
+                { name: 'Tug of War', duration: 3500 },
+                { name: 'Obstacle Course', duration: 5000 }
+            ];
+            
+            output.innerHTML += `<div class="event-message" style="color: #3498db;">🏁 SPORTS DAY INITIALIZED!</div>`;
+            output.innerHTML += `<div class="event-message">📋 Events: ${events.length}</div>`;
+            output.innerHTML += `<div class="event-message">👥 Teams: ${participants.length}</div>`;
+        }
+
+        async function runSportsDayEvents() {
+            const output = document.getElementById('output');
+            const startBtn = document.getElementById('startBtn');
+            
+            output.innerHTML += `<div class="event-message" style="color: #e67e22;">🎯 STARTING SPORTS DAY EVENTS...</div>`;
+            
+            for (let i = 0; i < events.length; i++) {
+                const event = events[i];
+                
+                // Announce event
+                output.innerHTML += `<div class="event-message" style="color: #9b59b6;">🔔 Event ${i + 1}: ${event.name}</div>`;
+                output.innerHTML += `<div class="event-message">⏳ ${event.name} in progress...</div>`;
+                
+                // Wait for event duration
+                await delay(event.duration);
+                
+                // Generate results
+                const winner = participants[Math.floor(Math.random() * participants.length)];
+                output.innerHTML += `<div class="event-message" style="color: ${winner.color}; font-weight: bold;">🏆 Winner: ${winner.name} wins ${event.name}!</div>`;
+                output.innerHTML += `<div class="event-message">&nbsp;</div>`;
+                
+                // Scroll to bottom
+                output.scrollTop = output.scrollHeight;
+            }
+            
+            // Sports Day completed
+            output.innerHTML += `<div class="event-message" style="color: #2ecc71; font-size: 18px; font-weight: bold;">🎉 SPORTS DAY COMPLETED! 🎉</div>`;
+            
+            startBtn.textContent = 'RESTART SPORTS DAY';
+            startBtn.disabled = false;
+            isSportsDayRunning = false;
+        }
+
+        // Setup function
+        function setupEvents() {
+            console.log('Sports Day events setup complete');
+            return true;
+        }
+
+        // Utility function for delays
+        function delay(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        // Event handler function
+        function handleButtonClick() {
+            console.log('Start button clicked');
+            startSportsDay();
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Sports Day Simulation loaded successfully!');
+            
+            const startBtn = document.getElementById('startBtn');
+            const errorMessage = document.getElementById('errorMessage');
+            
+            // Verify all required functions exist
+            if (typeof startSportsDay === 'function' && typeof setupEvents === 'function') {
+                console.log('✅ All Sports Day functions loaded correctly!');
+                startBtn.disabled = false;
+                
+                // Set up button event listener
+                startBtn.addEventListener('click', handleButtonClick);
+                
+                // Hide error message if shown
+                errorMessage.style.display = 'none';
+            } else {
+                console.error('❌ Some functions failed to load');
+                errorMessage.textContent = 'Error: Sports Day functions not loaded properly';
+                errorMessage.style.display = 'block';
+                startBtn.disabled = true;
+            }
+        });
+
+        // Global error handler
+        window.addEventListener('error', function(e) {
+            console.error('Global error:', e.error);
+        });
+    </script>
 </body>
 </html>
